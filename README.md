@@ -165,7 +165,7 @@ This project is open source and available for educational purposes.
 
 ---
 
-**Developed by**: [Your Name]  
-**Academic Institution**: [Your University/College]  
-**Course**: [Your Course Name]  
+**Developed by**: deshan-ck  
+**Academic Institution**: University of Moratuwa
+**Course**: Information technology and management
 **Year**: 2025
