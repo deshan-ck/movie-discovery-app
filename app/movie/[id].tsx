@@ -97,6 +97,18 @@ const Details = () => {
 
   return (
     <View className="bg-black flex-1">
+      {/* Back button at top left */}
+      <TouchableOpacity
+        className="absolute top-12 left-5 z-50 bg-black/50 rounded-full p-3"
+        onPress={router.back}
+      >
+        <Image
+          source={icons.arrow}
+          className="size-6 rotate-180"
+          tintColor="#fff"
+        />
+      </TouchableOpacity>
+
       {/* Alert Toast */}
       {showAlert && (
         <View className="absolute top-14 left-5 right-5 z-50">
@@ -107,7 +119,7 @@ const Details = () => {
         </View>
       )}
 
-      <ScrollView contentContainerStyle={{ paddingBottom: 80 }}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
         <View>
           <Image
             source={{
@@ -183,25 +195,6 @@ const Details = () => {
           />
         </View>
       </ScrollView>
-
-      <TouchableOpacity
-        className="absolute bottom-5 left-0 right-0 mx-5 rounded-lg overflow-hidden z-50"
-        onPress={router.back}
-      >
-        <LinearGradient
-          colors={['#FF494C', '#990003']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          className="py-3.5 flex flex-row items-center justify-center"
-        >
-          <Image
-            source={icons.arrow}
-            className="size-5 mr-1 mt-0.5 rotate-180"
-            tintColor="#fff"
-          />
-          <Text className="text-white font-semibold text-base">Go Back</Text>
-        </LinearGradient>
-      </TouchableOpacity>
     </View>
   );
 };
