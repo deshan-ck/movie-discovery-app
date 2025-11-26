@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { LinearGradient } from "expo-linear-gradient";
 
 import { icons } from "@/constants/icons";
 import useFetch from "@/services/usefetch";
@@ -20,8 +21,8 @@ interface MovieInfoProps {
 
 const MovieInfo = ({ label, value }: MovieInfoProps) => (
   <View className="flex-col items-start justify-center mt-5">
-    <Text className="text-light-200 font-normal text-sm">{label}</Text>
-    <Text className="text-light-100 font-bold text-sm mt-2">
+    <Text className="text-gray-400 font-normal text-sm">{label}</Text>
+    <Text className="text-white font-bold text-sm mt-2">
       {value || "N/A"}
     </Text>
   </View>
@@ -37,13 +38,13 @@ const Details = () => {
 
   if (loading)
     return (
-      <SafeAreaView className="bg-primary flex-1">
+      <SafeAreaView className="bg-black flex-1">
         <ActivityIndicator />
       </SafeAreaView>
     );
 
   return (
-    <View className="bg-primary flex-1">
+    <View className="bg-black flex-1">
       <ScrollView contentContainerStyle={{ paddingBottom: 80 }}>
         <View>
           <Image
@@ -66,10 +67,10 @@ const Details = () => {
         <View className="flex-col items-start justify-center mt-5 px-5">
           <Text className="text-white font-bold text-xl">{movie?.title}</Text>
           <View className="flex-row items-center gap-x-1 mt-2">
-            <Text className="text-light-200 text-sm">
+            <Text className="text-gray-400 text-sm">
               {movie?.release_date?.split("-")[0]} •
             </Text>
-            <Text className="text-light-200 text-sm">{movie?.runtime}m</Text>
+            <Text className="text-gray-400 text-sm">{movie?.runtime}m</Text>
           </View>
 
           <View className="flex-row items-center bg-dark-100 px-2 py-1 rounded-md gap-x-1 mt-2">
@@ -79,7 +80,7 @@ const Details = () => {
               {Math.round(movie?.vote_average ?? 0)}/10
             </Text>
 
-            <Text className="text-light-200 text-sm">
+            <Text className="text-gray-400 text-sm">
               ({movie?.vote_count} votes)
             </Text>
           </View>
@@ -114,15 +115,22 @@ const Details = () => {
       </ScrollView>
 
       <TouchableOpacity
-        className="absolute bottom-5 left-0 right-0 mx-5 bg-accent rounded-lg py-3.5 flex flex-row items-center justify-center z-50"
+        className="absolute bottom-5 left-0 right-0 mx-5 rounded-lg overflow-hidden z-50"
         onPress={router.back}
       >
-        <Image
-          source={icons.arrow}
-          className="size-5 mr-1 mt-0.5 rotate-180"
-          tintColor="#fff"
-        />
-        <Text className="text-white font-semibold text-base">Go Back</Text>
+        <LinearGradient
+          colors={['#FF494C', '#990003']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          className="py-3.5 flex flex-row items-center justify-center"
+        >
+          <Image
+            source={icons.arrow}
+            className="size-5 mr-1 mt-0.5 rotate-180"
+            tintColor="#fff"
+          />
+          <Text className="text-white font-semibold text-base">Go Back</Text>
+        </LinearGradient>
       </TouchableOpacity>
     </View>
   );
