@@ -8,10 +8,14 @@ import {
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { LinearGradient } from "expo-linear-gradient";
+import { useState, useEffect } from "react";
 
 import { icons } from "@/constants/icons";
 import useFetch from "@/services/usefetch";
 import { fetchMovieDetails } from "@/services/api";
+import { saveMovie, unsaveMovie, isMovieSaved } from "@/services/appwrite";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface MovieInfoProps {
   label: string;
@@ -20,8 +24,8 @@ interface MovieInfoProps {
 
 const MovieInfo = ({ label, value }: MovieInfoProps) => (
   <View className="flex-col items-start justify-center mt-5">
-    <Text className="text-light-200 font-normal text-sm">{label}</Text>
-    <Text className="text-light-100 font-bold text-sm mt-2">
+    <Text className="text-gray-400 font-normal text-sm">{label}</Text>
+    <Text className="text-white font-bold text-sm mt-2">
       {value || "N/A"}
     </Text>
   </View>
@@ -30,21 +34,92 @@ const MovieInfo = ({ label, value }: MovieInfoProps) => (
 const Details = () => {
   const router = useRouter();
   const { id } = useLocalSearchParams();
+  const { user } = useAuth();
+  const [isSaved, setIsSaved] = useState(false);
+  const [savingMovie, setSavingMovie] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
 
   const { data: movie, loading } = useFetch(() =>
     fetchMovieDetails(id as string)
   );
 
+  useEffect(() => {
+    if (user && id) {
+      checkIfSaved();
+    }
+  }, [user, id]);
+
+  useEffect(() => {
+    if (showAlert) {
+      const timer = setTimeout(() => {
+        setShowAlert(false);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [showAlert]);
+
+  const checkIfSaved = async () => {
+    if (!user) return;
+    const saved = await isMovieSaved(user.$id, id as string);
+    setIsSaved(saved);
+  };
+
+  const handleSaveMovie = async () => {
+    if (!user || !movie) return;
+
+    setSavingMovie(true);
+    try {
+      if (isSaved) {
+        await unsaveMovie(user.$id, movie.id.toString());
+        setIsSaved(false);
+        setAlertMessage("Movie removed from saved list");
+      } else {
+        await saveMovie(user.$id, movie);
+        setIsSaved(true);
+        setAlertMessage("Movie saved successfully");
+      }
+      setShowAlert(true);
+    } catch (error: any) {
+      setAlertMessage(error.message || "Failed to save movie");
+      setShowAlert(true);
+    } finally {
+      setSavingMovie(false);
+    }
+  };
+
   if (loading)
     return (
-      <SafeAreaView className="bg-primary flex-1">
+      <SafeAreaView className="bg-black flex-1">
         <ActivityIndicator />
       </SafeAreaView>
     );
 
   return (
-    <View className="bg-primary flex-1">
-      <ScrollView contentContainerStyle={{ paddingBottom: 80 }}>
+    <View className="bg-black flex-1">
+      {/* Back button at top left */}
+      <TouchableOpacity
+        className="absolute top-12 left-5 z-50 bg-black/50 rounded-full p-3"
+        onPress={router.back}
+      >
+        <Image
+          source={icons.arrow}
+          className="size-6 rotate-180"
+          tintColor="#fff"
+        />
+      </TouchableOpacity>
+
+      {/* Alert Toast */}
+      {showAlert && (
+        <View className="absolute top-14 left-5 right-5 z-50">
+          <View className="bg-[#1A1A1A] border border-[#FF494C] rounded-lg px-4 py-3 flex-row items-center">
+            <Image source={icons.save} className="size-5 mr-3" tintColor="#FF494C" />
+            <Text className="text-white text-sm flex-1">{alertMessage}</Text>
+          </View>
+        </View>
+      )}
+
+      <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
         <View>
           <Image
             source={{
@@ -54,22 +129,30 @@ const Details = () => {
             resizeMode="stretch"
           />
 
-          <TouchableOpacity className="absolute bottom-5 right-5 rounded-full size-14 bg-white flex items-center justify-center">
-            <Image
-              source={icons.play}
-              className="w-6 h-7 ml-1"
-              resizeMode="stretch"
-            />
+          <TouchableOpacity
+            className="absolute bottom-5 right-5 rounded-full size-14 bg-white/90 flex items-center justify-center"
+            onPress={handleSaveMovie}
+            disabled={savingMovie}
+          >
+            {savingMovie ? (
+              <ActivityIndicator size="small" color="#FF494C" />
+            ) : (
+              <Image
+                source={icons.save}
+                className="size-6"
+                tintColor={isSaved ? "#FF494C" : "#000"}
+              />
+            )}
           </TouchableOpacity>
         </View>
 
         <View className="flex-col items-start justify-center mt-5 px-5">
           <Text className="text-white font-bold text-xl">{movie?.title}</Text>
           <View className="flex-row items-center gap-x-1 mt-2">
-            <Text className="text-light-200 text-sm">
+            <Text className="text-gray-400 text-sm">
               {movie?.release_date?.split("-")[0]} •
             </Text>
-            <Text className="text-light-200 text-sm">{movie?.runtime}m</Text>
+            <Text className="text-gray-400 text-sm">{movie?.runtime}m</Text>
           </View>
 
           <View className="flex-row items-center bg-dark-100 px-2 py-1 rounded-md gap-x-1 mt-2">
@@ -79,7 +162,7 @@ const Details = () => {
               {Math.round(movie?.vote_average ?? 0)}/10
             </Text>
 
-            <Text className="text-light-200 text-sm">
+            <Text className="text-gray-400 text-sm">
               ({movie?.vote_count} votes)
             </Text>
           </View>
@@ -112,18 +195,6 @@ const Details = () => {
           />
         </View>
       </ScrollView>
-
-      <TouchableOpacity
-        className="absolute bottom-5 left-0 right-0 mx-5 bg-accent rounded-lg py-3.5 flex flex-row items-center justify-center z-50"
-        onPress={router.back}
-      >
-        <Image
-          source={icons.arrow}
-          className="size-5 mr-1 mt-0.5 rotate-180"
-          tintColor="#fff"
-        />
-        <Text className="text-white font-semibold text-base">Go Back</Text>
-      </TouchableOpacity>
     </View>
   );
 };
