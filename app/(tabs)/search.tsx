@@ -61,7 +61,7 @@ const Search = () => {
 
       <View className="px-5 mt-3 mb-4">
         <Text className="text-white text-[26px] font-extrabold tracking-[4px] text-center mb-4">
-          CINEMA
+          CINEMA+
         </Text>
         <SearchBar
           placeholder="Search movies online"

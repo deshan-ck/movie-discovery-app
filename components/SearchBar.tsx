@@ -24,7 +24,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
   if (onChangeText) {
     return (
       <View className="w-full">
-        <View className="flex-row items-center w-full rounded-full bg-[#6B6B6B] px-5 py-3.5">
+        <View className="flex-row items-center w-full rounded-full bg-[#6B6B6B] px-5 py-2.5">
           {/* Red search icon on the left */}
           <Image
             source={icons.search}
@@ -55,7 +55,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
       onPress={onPress}
       className="w-full"
     >
-      <View className="flex-row items-center w-full rounded-full bg-[#6B6B6B] px-5 py-3.5">
+      <View className="flex-row items-center w-full rounded-full bg-[#6B6B6B] px-5 py-2">
         {/* Red search icon on the left */}
         <Image
           source={icons.search}

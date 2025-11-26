@@ -1,6 +1,7 @@
 import { Tabs } from "expo-router";
 import { Image, Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
+import { BlurView } from "expo-blur";
 
 import { icons } from "@/constants/icons";
 
@@ -40,7 +41,7 @@ export default function TabsLayout() {
           alignItems: "center",
         },
         tabBarStyle: {
-          backgroundColor: "#404040",
+          backgroundColor: "transparent",
           borderRadius: 50,
           marginHorizontal: 20,
           marginBottom: 36,
@@ -48,7 +49,23 @@ export default function TabsLayout() {
           position: "absolute",
           overflow: "hidden",
           borderWidth: 0,
+          borderTopWidth: 0,
+          elevation: 0,
         },
+        tabBarBackground: () => (
+          <BlurView
+            intensity={100}
+            tint="dark"
+            style={{
+              flex: 1,
+              backgroundColor: "rgba(40, 40, 40, 0.7)",
+              borderRadius: 50,
+              overflow: "hidden",
+              borderWidth: 1,
+              borderColor: "rgba(255, 255, 255, 0.1)",
+            }}
+          />
+        ),
       }}
     >
       <Tabs.Screen

@@ -9,10 +9,13 @@ import {
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
+import { useState, useEffect } from "react";
 
 import { icons } from "@/constants/icons";
 import useFetch from "@/services/usefetch";
 import { fetchMovieDetails } from "@/services/api";
+import { saveMovie, unsaveMovie, isMovieSaved } from "@/services/appwrite";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface MovieInfoProps {
   label: string;
@@ -31,10 +34,59 @@ const MovieInfo = ({ label, value }: MovieInfoProps) => (
 const Details = () => {
   const router = useRouter();
   const { id } = useLocalSearchParams();
+  const { user } = useAuth();
+  const [isSaved, setIsSaved] = useState(false);
+  const [savingMovie, setSavingMovie] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
 
   const { data: movie, loading } = useFetch(() =>
     fetchMovieDetails(id as string)
   );
+
+  useEffect(() => {
+    if (user && id) {
+      checkIfSaved();
+    }
+  }, [user, id]);
+
+  useEffect(() => {
+    if (showAlert) {
+      const timer = setTimeout(() => {
+        setShowAlert(false);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [showAlert]);
+
+  const checkIfSaved = async () => {
+    if (!user) return;
+    const saved = await isMovieSaved(user.$id, id as string);
+    setIsSaved(saved);
+  };
+
+  const handleSaveMovie = async () => {
+    if (!user || !movie) return;
+
+    setSavingMovie(true);
+    try {
+      if (isSaved) {
+        await unsaveMovie(user.$id, movie.id.toString());
+        setIsSaved(false);
+        setAlertMessage("Movie removed from saved list");
+      } else {
+        await saveMovie(user.$id, movie);
+        setIsSaved(true);
+        setAlertMessage("Movie saved successfully");
+      }
+      setShowAlert(true);
+    } catch (error: any) {
+      setAlertMessage(error.message || "Failed to save movie");
+      setShowAlert(true);
+    } finally {
+      setSavingMovie(false);
+    }
+  };
 
   if (loading)
     return (
@@ -45,6 +97,16 @@ const Details = () => {
 
   return (
     <View className="bg-black flex-1">
+      {/* Alert Toast */}
+      {showAlert && (
+        <View className="absolute top-14 left-5 right-5 z-50">
+          <View className="bg-[#1A1A1A] border border-[#FF494C] rounded-lg px-4 py-3 flex-row items-center">
+            <Image source={icons.save} className="size-5 mr-3" tintColor="#FF494C" />
+            <Text className="text-white text-sm flex-1">{alertMessage}</Text>
+          </View>
+        </View>
+      )}
+
       <ScrollView contentContainerStyle={{ paddingBottom: 80 }}>
         <View>
           <Image
@@ -55,12 +117,20 @@ const Details = () => {
             resizeMode="stretch"
           />
 
-          <TouchableOpacity className="absolute bottom-5 right-5 rounded-full size-14 bg-white flex items-center justify-center">
-            <Image
-              source={icons.play}
-              className="w-6 h-7 ml-1"
-              resizeMode="stretch"
-            />
+          <TouchableOpacity
+            className="absolute bottom-5 right-5 rounded-full size-14 bg-white/90 flex items-center justify-center"
+            onPress={handleSaveMovie}
+            disabled={savingMovie}
+          >
+            {savingMovie ? (
+              <ActivityIndicator size="small" color="#FF494C" />
+            ) : (
+              <Image
+                source={icons.save}
+                className="size-6"
+                tintColor={isSaved ? "#FF494C" : "#000"}
+              />
+            )}
           </TouchableOpacity>
         </View>
 

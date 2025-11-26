@@ -59,10 +59,10 @@ const Index = () => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 24 }}
       >
-        {/* CINEMA title */}
+        {/* CINEMA+ title */}
         <View className="items-center mt-3 mb-4">
           <Text className="text-white text-[26px] font-extrabold tracking-[4px]">
-            CINEMA
+            CINEMA+
           </Text>
         </View>
 
@@ -99,7 +99,7 @@ const Index = () => {
                   renderItem={({ item, index }) => (
                     <TrendingCard movie={item} index={index} />
                   )}
-                  keyExtractor={(item) => item.movie_id.toString()}
+                  keyExtractor={(item, index) => `trending-${item.movie_id}-${index}`}
                 />
               </View>
             )}
@@ -113,7 +113,7 @@ const Index = () => {
               <FlatList
                 data={movies}
                 renderItem={({ item }) => <MovieCard {...item} />}
-                keyExtractor={(item) => item.id.toString()}
+                keyExtractor={(item, index) => `movie-${item.id}-${index}`}
                 numColumns={3}
                 scrollEnabled={false}
                 columnWrapperStyle={{
